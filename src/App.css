@@ -73,7 +73,7 @@ body {
   line-height: 1.5;
   color: #495057;
   background-color: #fff;
-  background-clip: padding-box;
+  /* background-clip: padding-box; */
   border: 1px solid #ced4da;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
