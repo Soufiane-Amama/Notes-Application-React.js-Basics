@@ -1,7 +1,57 @@
+import { useState, useEffect } from 'react';
 import './App.css';
+import Preview from './components/Preview';
+import Message from './components/Message'; 
+import NotesContainer from './components/Notes/NotesContainer';
+import NotesList from './components/Notes/NotesList';
+import Note from './components/Notes/Note';
+
 
 function App() {
+  const [notes, setNotes] = useState([]);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
+
+
+
+  const addNoteHandler = () => {
+    setCreating(true);
+    setTitle('');
+    setContent('');
+    setEditing(false);
+  };
+
+  
+  //حفظ الملاحظة
+  const saveNoteHandler = () => {
+    const note = {
+      id: new Date(),
+      title: title,
+      content: content,
+    };
+    const updatedNotes = [...notes, note];
+    setNotes(updatedNotes);
+    setTitle('');
+    setContent('');
+    setCreating(false);
+    setSelectedNote(note.id);
+  };
+
+    //اختيار ملاحظة
+    const selectNoteHandler = (noteId) => {
+      setSelectedNote(noteId);
+      setCreating(false);
+      setEditing(false);
+    }; 
+
+
+  
   const getAddNote = () => {
+
     return (
       <div>
         <h2>إضافة ملاحظة جديدة</h2>
@@ -11,7 +61,8 @@ function App() {
             name="title"
             className="form-input mb-30"
             placeholder="العنوان"
-            value=""
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
           />
 
           <textarea
@@ -19,9 +70,11 @@ function App() {
             name="content"
             className="form-input"
             placeholder="النص"
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
           />
 
-          <a href="#" className="button green">
+          <a href="#" className="button green" onClick={saveNoteHandler}>
             حفظ
           </a>
         </div>
@@ -30,6 +83,19 @@ function App() {
   };
 
   const getPreview = () => {
+
+    if (notes.length === 0) {
+      return <Message title="لا يوجد ملاحظات" />;
+    }
+
+    if (!selectedNote) {
+      return <Message title="الرجاء اختيار ملاحظة" />;
+    }
+
+    const note = notes.find((note) => {
+      return note.id === selectedNote;
+    });
+
     return (
       <div>
         <div className="note-operations">
@@ -41,8 +107,8 @@ function App() {
           </a>
         </div>
         <div>
-          <h2>عنوان ملاحظة تجريبية</h2>
-          <p>نص ملاحظة تجريبية</p>
+          <h2>{note.title}</h2>
+          <p>{note.content}</p>
         </div>
       </div>
     );
@@ -50,16 +116,21 @@ function App() {
 
   return (
     <div className="App">
-      <div className="notes-section">
-        <ul className="notes-list">
-          <li className="note-item">ملاحظة رقم #1</li>
-          <li className="note-item">ملاحظة رقم #2</li>
-          <li className="note-item">ملاحظة رقم #3</li>
-          <li className="note-item">ملاحظة رقم #4</li>
-        </ul>
-        <button className="add-btn">+</button>
-      </div>
-      <div className="preview-section">{getPreview()}</div>
+       <NotesContainer>
+        <NotesList>
+          {notes.map((note) => (
+            <Note
+              key={note.id}
+              title={note.title}
+              active={selectedNote === note.id}
+              noteClicked={() => selectNoteHandler(note.id)}
+            />
+            ))
+          }
+        </NotesList>
+        <button className="add-btn" onClick={addNoteHandler}>+</button>
+        </NotesContainer>
+      <Preview>{creating ? getAddNote() : getPreview()}</Preview>
     </div>
   );
 }
